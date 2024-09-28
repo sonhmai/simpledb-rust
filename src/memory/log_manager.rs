@@ -1,8 +1,8 @@
 use crate::filesystem::FileManager;
+use crate::memory::lsn::LSN;
 
 /// Responsible for reading from and writing log record to log file.
 /// LogManager supports only sequential access to the log file.
-/// It uses TODO as memory-management algo.
 ///
 /// `LogManager` does not understand the contents of `log records`, treat them as byte array `&[u8]`.
 /// Understanding the serde of the bytes and log record is the job of `RecoveryManager`.
@@ -20,6 +20,28 @@ use crate::filesystem::FileManager;
 ///    - If there is no room, then allocate a new, empty page, place the log record in that page,
 /// and append the page to a new block at the end of the log file.
 ///
+/// The optimal log management algo:
+/// 1. Permanently allocate one memory page to hold the contents of the last block of the log file.
+/// Call this page `P`.
+/// 2. When a new log record is submitted
+///     - if there is no room in P => write P to disk and clear its content.
+///     - Append the new log record to P.
+/// 3. When db requests that a particular log record be written to disk (e.g. by a transaction commit)
+///     - determine if that log record is in P.
+///     - if so, write P to disk.
+///
+/// The simple algo needs a disk read and write for every log record.
+/// This is slower than the optimal algo.
+///
+/// The optimal algo has 2 places where disk write is needed -> `less than the simple algo`
+/// 1. where the page is full
+/// 2. where a log record is needed to be persisted
+///
+/// There is one issue (will be addressed in `transaction management` later):
+/// - `buffer manager` must wait for all a page `related log records` written to disk by `log manager`
+/// - before it can write a `modified data page` to disk
+/// - to ensure redo can be done if necessary later
+///
 pub struct LogManager {}
 
 impl LogManager {
@@ -27,11 +49,18 @@ impl LogManager {
         LogManager {}
     }
 
-    pub fn append(&self, record: &[u8]) -> usize {
+    /// add record to the log and return its `Log Sequence Number` (LSN).
+    /// The only constraint `LogManager` cares about is the array must fit inside a page.
+    /// It treats the record simply as a byte array.
+    ///
+    /// `Append` does not guarantee the record is written to disk. A client can force a specific
+    /// LSN to disk by calling `flush`.
+    pub fn append(&self, record: &[u8]) -> LSN {
         todo!()
     }
 
-    pub fn flush(&self, lsn: usize) -> () {
+    /// Ensures that this lsn `log record` and all before it are written to disk.
+    pub fn flush(&self, lsn: LSN) -> () {
         todo!()
     }
 
