@@ -41,7 +41,7 @@ use crate::memory::lsn::LSN;
 /// - `buffer manager` must wait for all a page `related log records` written to disk by `log manager`
 /// - before it can write a `modified data page` to disk
 /// - to ensure redo can be done if necessary later
-///
+#[derive(Debug)]
 pub struct LogManager {}
 
 impl LogManager {
