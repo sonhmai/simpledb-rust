@@ -16,9 +16,17 @@
 1. StartRecord: written when a txn begins
 2. SetIntRecord: written when a txn modifies value
 3. SetStringRecord: written when a txn modifies value
-4. CheckpointRecord
+4. CheckpointRecord: written to reduce log portion that recovery algo needs to traverse
 5. CommitRecord
 6. RollbackRecord
+
+`Checkpoint`
+- `quiescent` checkpoint record can be written when no transactions running
+  - pros: simple to implement. easy to understand
+  - cons: db unavailable when recovery manager waits for existing txn to complete
+- `nonquiescent` checkpoint record can be written at any time.
+- If undo-redo (or redo-only) recovery is used, then the recovery manager must flush modified buffers to disk before it writes a checkpoint record.
+
 
 `ConcurrenyManager`
 - each `Transaction` has its own `Concurrency Manager` to manage concurrency
