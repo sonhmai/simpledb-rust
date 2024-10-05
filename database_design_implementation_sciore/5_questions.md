@@ -54,6 +54,40 @@ private void doRollback() {
   }
 ```
 
+### 5.5
+
+The SimpleDB rollback method writes the rollback log record to disk before it returns. Is this necessary? Is it a good idea?
+
+### 5.7 undo-only
+
+```
+Consider the undo-only commit algorithm of Fig. 5.7. 
+Explain why it would be incorrect to swap steps 1 and 2 of the algorithm.
+Give an example of the bad scenario.
+
+Fig. 5.7 algo for committing a transaction, undo-only recovery
+1. Flush the transaction’s modified buffers to disk.
+2. Write a commit record to the log.
+3. Flush the log page containing the commit record.
+
+Algo after swapped
+2. Write a commit record to the log.
+1. Flush the transaction’s modified buffers to disk.
+3. Flush the log page containing the commit record.
+```
+
+writing the commit record before flushing the buffers to disk creates a vulnerable window. 
+- Imagine the system crashes after the commit record is written but before the buffer flush completes. 
+- the log indicates a successful commit, but the actual data changes might not be fully written to disk. Upon recovery, the system would see the commit record and assume those changes are already persistent, leading to data inconsistency
+
+Bad scenario
+1. (start txn) A transaction modifies data in block 'A', changing a value from 10 to 20. change only in mem buffer.
+2. (step 2) The commit record for the transaction is written to the log.
+3. (step 1) Flush modified buffers to disk (step 1). Not yet flush log page.
+4. (crash) db crashed before `step 3` (flush log page to disk)
+5. db restarts
+6. `undo-only` recovery manager sees commit record for the transaction and assumes the changes to block 'A' are persistent. It does not attempt to redo them. However, the actual value on disk in block 'A' might still be 10 (the old value), leading to incorrect data.
+
 ### 5.20 recovery process
 
 Suppose that the recovery manager finds the following records in the log file when the system restarts after a crash.
@@ -154,10 +188,18 @@ Sequence of Actions Modifying a Value
    - **During Commit (`RecoveryMgr.commit()`):**  *Crucially*, when a transaction commits, SimpleDB  **flushes all modified buffers to disk**  *before*  writing the commit record to the log. **Critically, it then flushes the log page containing the commit record**.  This ensures both the transaction's modifications and the commit record itself are safely on disk, [1, 2].
    - Forced Flushing (`LogMgr.flush(int lsn)`): The `LogMgr` allows forcing a specific log record (and any preceding ones) to be written to disk, providing an extra layer of control.
 
-
 > (e) Is it possible for transaction T1 to have modified block 23 on disk?
 
+is there any case where the buffer was flushed to disk without log record being flushed?
+- If no, not possible. because for T1 to have modified block 23 on disk, the setRecord needs to be on disk first, and we will see it in the log. Here we don't see a txn1 record in the log.
+- If yes, possible.
+
 > (f) Is it possible for transaction T1 to have not modified a buffer containing block 44?
+
+No. 
+Because we have this setRecord `<SETSTRING, 1, junk, 44, 0, abc, xyz>` which means txn 1 set offset 0 of block 44 from abc to xyz in file junk.
+Having it in the log means that the log page was flushed.
+
 
 ### 5.35 LockTable synchronized methods
 
