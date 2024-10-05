@@ -3,6 +3,22 @@
 `Transaction`
 
 `RecoveryManager`
+- each transaction has its own recovery manager
+- responsible for 
+  1. writing suitable log records for parent transaction
+  2. implement rollback and recovery algos
+- uses `undo-only recovery` with `value-granularity` data items
+- note
+  - recovery is idempotent
+  - recovery can cause more disk writes than necessary
+
+`LogRecord`: store
+1. StartRecord: written when a txn begins
+2. SetIntRecord: written when a txn modifies value
+3. SetStringRecord: written when a txn modifies value
+4. CheckpointRecord
+5. CommitRecord
+6. RollbackRecord
 
 `ConcurrenyManager`
 - each `Transaction` has its own `Concurrency Manager` to manage concurrency

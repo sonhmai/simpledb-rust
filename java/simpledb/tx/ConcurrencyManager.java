@@ -1,4 +1,4 @@
-package simpledb.tx.concurrency;
+package simpledb.tx;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -9,7 +9,7 @@ import simpledb.file.BlockId;
 * Concurrency Manager implements lock protocol using block-level granularity.
 * and created for a transaction. The same lock table needs to be shared.
 */
-public class ConcurrencyMgr {
+public class ConcurrencyManager {
   /*
   * The lock table is shared among all Concurrency Manager as it's a static
   * variable
