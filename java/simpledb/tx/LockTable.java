@@ -1,4 +1,4 @@
-package simpledb.tx.concurrency;
+package simpledb.tx;
 
 import java.util.HashMap;
 import java.util.Map;
