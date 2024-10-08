@@ -4,6 +4,7 @@ from reading
 - why locking at block level, not page or something else?
 - if `doRecover` does not tie to one transaction specifically, why is it in a specific transaction? `Transaction` has `RecoveryManager` has `recover`. It seems to me that it acts on a database level recovery rather than a specific transaction scope.
 
+
 ### 5.4 recovery and StartRecord
 
 ```
