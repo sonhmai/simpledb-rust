@@ -1,0 +1,6 @@
+[book]
+authors = ["sonhmai"]
+language = "en"
+multilingual = false
+src = "src"
+title = "How Relational Databases Work"

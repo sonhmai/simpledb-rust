@@ -1,6 +1,11 @@
-[package]
+[workspace]
+members = ["book-relational-db", "rust"]
+
+[workspace.package]
 name = "simpledb-rust"
 version = "0.1.0"
 edition = "2021"
+keywords = ["storage", "database", "tutorial", "rust"]
+
 
 [dependencies]
