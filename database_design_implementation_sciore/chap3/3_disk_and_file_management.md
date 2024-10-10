@@ -7,16 +7,41 @@ contents
   1. block-level interface
   2. file-level interface
 - how databases use both interfaces
+  - good and common compromise: store data in files, access files at block level.
 - simpledb file manager API and impl in detail
 
-## 3.1 persistent data storage
+summary
+- how many stages for disk access?
+  1. seek time
+  2. rotational delay
+  3. transfer time
+- how to improve access time? disk caches, cylinders, disk striping.
 
-## 3.2 block interface
+#### RAID
 
-- different disks has different sector size
-- block == sector whose size determined by OS
-- OS maintains mapping btw block and sector
-- block same fixed size for all disks
+- how to improve disk reliability? RAID
+  - RAID 0
+  - RAID 1
+  - RAID 4
+- `controller`
+  - an abstraction layer for the OS to see only a virtual single disk
+  - controller maps virtual read/write op -> one or more ops on RAID disks.
+
+### OS block interface
+- why? hide details of disk and flash drive from OS clients by providing `block-based interface`
+- how?
+  - block == similar to physical disk sector. # is size determined by OS
+  - clients access content by block number, see apis.
+  - different disks has different sector size 
+  - OS maintains mapping btw block and sector 
+  - OS keeps track of which block ares free by `disk map` or `free list`
+  - block same fixed size for all disks
+- `page`
+  - **page is a block-sized area of memory**
+  - client changes block on disk by
+    - read disk block to mem as page
+    - change page
+    - write page back to disk block
 
 OS block api
 ``` 
@@ -37,13 +62,20 @@ deallocate(k,n)
 
 ![img.png](3.6_two_way_keeps_track_free_blocks.png)
 
-## 3.3 file-level interface
+### file-level interface
+- another interface besides `block interface`
+- OS clients see file as `named sequence of bytes`, can read/write any num of bytes starting at any pos in file.
+- no notion of block at this level.
+- 3 ways OS implement files
+  1. contiguous allocation
+  2. extent-based allocation
+  3. indexed allocation
 
 ![img.png](3.8_fs_dir_for_contiguous_allocation.png)
 
 ![img.png](3.9_fs_dir_for_extend_based_alloc.png)
 
-using file system interface to disk
+java file api
 ```java 
 RandomAccessFile f = new RandomAccessFile("junk", "rws");
 f.seek(7992);
@@ -53,7 +85,11 @@ f.writeInt(n+1);
 f.close();
 ```
 
-## 3.4 db system and os
+rust file api
+
+
+
+## db system and os
 
 block api
 - pros
@@ -71,7 +107,7 @@ file api
 
 OS way of managing I/O buffers is not suitable for db queries.
 
-## 3.5 simpledb file manager
+## simpledb file manager
 
 structure
 - simpledb is stored in several files.
