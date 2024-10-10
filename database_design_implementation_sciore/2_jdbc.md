@@ -13,16 +13,39 @@
 - computing in Java vs SQL
 - summary
 
-jdbc interface
+## Summary
+- JDBC methods manage transfer data btw Java client and db engine.
+- JDBC consists of 5 interfaces: Driver, Connection, Statement, ResultSet, ResultSetMetaData
 ```java
 JDBC {
-    interface Driver
-    interface Connection
+    // Driver contains low level details for connecting with db engine.
+    // driver class and conn strings are the only vendor-specific code in JDBC program. everthing else is vendor-neutral.
+    interface Driver 
+    
+    // holds db resources other client might need. close them as soon as possible.
+    interface Connection 
+    
     interface Statement
-    interface ResultSet // represent query output records
-    interface ResultSetMetaData
+    
+    // represent query output records. holds db resources other client might need. 
+    // close them as soon as possible.
+    interface ResultSet 
+    
+    // provides output table schema info (fields name, type, display size)
+    interface ResultSetMetaData 
 }
 ```
+- JDBC can throw SQLException. client must handle them.
+- Full JDBC provides class `DriverManager` and `DataSource` to simplify connection process and make it more vendor-agnostic.
+- JDBC defines 4 `isolation levels`. 
+Client sets by `conn.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE)`
+  1. Read-Uncommitted: no isolation. Problems: uncommitted data, nonreapeatable reads, phantom records.
+  2. Read-Committed: no uncommitted data.
+  3. Repeatable-Read: no nonreapeatable reads.
+  4. Serializable: no phantom records.
+- trade-off is speed. more isolation == slower concurrency.
+- programmers analyze concurrency error risks -> make decision of which isolation level.
+
 
 ### ResultSet
 
