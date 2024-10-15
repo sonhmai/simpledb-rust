@@ -3,6 +3,12 @@
 ## Contents
 - exploring JDBC functionality in `java.sql`
 - basic JDBC
+  - connecting to db engine
+  - disconnecting from a db engine
+  - sql exceptions
+  - executing sql statements
+  - result sets
+  - using query metadata
 - advanced JDBC
   - hiding Driver
   - explicit transaction handling
@@ -37,15 +43,41 @@ JDBC {
 ```
 - JDBC can throw SQLException. client must handle them.
 - Full JDBC provides class `DriverManager` and `DataSource` to simplify connection process and make it more vendor-agnostic.
-- JDBC defines 4 `isolation levels`. 
+
+### JDBC Isolation Levels
+
+JDBC defines 4 `isolation levels`. 
+1. Read-Uncommitted: no isolation. Problems: uncommitted data, nonreapeatable reads, phantom records.
+2. Read-Committed: no uncommitted data.
+3. Repeatable-Read: no nonreapeatable reads.
+4. Serializable: no phantom records.
+
+
 Client sets by `conn.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE)`
-  1. Read-Uncommitted: no isolation. Problems: uncommitted data, nonreapeatable reads, phantom records.
-  2. Read-Committed: no uncommitted data.
-  3. Repeatable-Read: no nonreapeatable reads.
-  4. Serializable: no phantom records.
+
 - trade-off is speed. more isolation == slower concurrency.
 - programmers analyze concurrency error risks -> make decision of which isolation level.
 
+```java
+import java.sql.Driver;
+import java.sql.Connection;
+import org.apache.derby.jdbc.ClientDriver;
+
+public class CreateTestDB {
+    public static void main(String[] args) {
+        String url = "jdbc:derby://localhost/testdb;create=true";
+        Driver d = new ClientDriver();
+        try {
+            Connection conn = d.connect(url, null);
+            System.out.println("Database created");
+            conn.close();
+        }
+        catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+}
+```
 
 ### ResultSet
 
@@ -59,7 +91,7 @@ public class StudentMajor {
             Connection conn = d.connect(url, null);
             Statement stmt = conn.createStatement();
             ResultSet rs = stmt.executeQuery(qry);
-                )
+        )
     }
 }
 ```
