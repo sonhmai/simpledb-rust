@@ -8,7 +8,6 @@ import simpledb.buffer.Buffer;
 import simpledb.buffer.BufferMgr;
 import simpledb.file.BlockId;
 import simpledb.log.LogMgr;
-import simpledb.tx.Transaction;
 
 public class RecoveryManager {
   private LogMgr lm;

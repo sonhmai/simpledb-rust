@@ -6,8 +6,6 @@ import simpledb.file.BlockId;
 import simpledb.file.FileMgr;
 import simpledb.file.Page;
 import simpledb.log.LogMgr;
-import simpledb.tx.ConcurrencyManager;
-import simpledb.tx.RecoveryManager;
 
 public class Transaction {
   private static int nextTxNum = 0;
