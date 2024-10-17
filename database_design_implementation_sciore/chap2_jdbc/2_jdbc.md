@@ -12,7 +12,7 @@
 - advanced JDBC
   - hiding Driver
   - explicit transaction handling
-  - transaction isolation levels
+  - `transaction isolation levels`
   - prepared statements
   - scrollable and updatable result sets
   - additional data types
@@ -44,7 +44,7 @@ JDBC {
 - JDBC can throw SQLException. client must handle them.
 - Full JDBC provides class `DriverManager` and `DataSource` to simplify connection process and make it more vendor-agnostic.
 
-### JDBC Isolation Levels
+### Transaction Isolation Levels
 
 JDBC defines 4 `isolation levels`. 
 1. Read-Uncommitted: no isolation. Problems: uncommitted data, nonreapeatable reads, phantom records.
@@ -54,10 +54,18 @@ JDBC defines 4 `isolation levels`.
 
 
 Client sets by `conn.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE)`
-
 - trade-off is speed. more isolation == slower concurrency.
 - programmers analyze concurrency error risks -> make decision of which isolation level.
 
+#### Reading uncommitted data
+
+#### Unexpected changes to an existing record
+
+#### Unexpected changes to number of records
+
+### JDBC Example Code
+
+driver
 ```java
 import java.sql.Driver;
 import java.sql.Connection;
@@ -77,6 +85,11 @@ public class CreateTestDB {
         }
     }
 }
+```
+
+driver manager
+``` 
+DriverManager
 ```
 
 ### ResultSet
