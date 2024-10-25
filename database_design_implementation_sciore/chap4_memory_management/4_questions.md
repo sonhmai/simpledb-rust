@@ -46,3 +46,70 @@ public class BufferMgr {
     }
 }
 ```
+
+### 4.7 buffer pool replacement strategies
+
+Consider the example pin/unpin scenario of Fig. 4.9a, together with the additional operations pin(60); pin(70). 
+For each of the four replacement strategies given in the text
+- draw the state of the buffers, 
+- assuming that the buffer pool contains five buffers.
+
+```
+time    action
+1       pin(10); pin(20); pin(30); 
+4       pin(40); unpin(20); pin(50); 
+7       unpin(40); unpin(10); unpin(30); 
+10      unpin(50); pin(60); pin(70)
+```
+
+1-naive: scan pool, replace first unpinned buffer found
+``` 
+# done time 10
+
+Buffer      0   1   2   3   4
+block#      10  20  30  40  50
+t read      1   2   3   4   6
+t unpin     8   5   9   7   10
+
+# done time 11 and 12
+
+Buffer      0   1   2   3   4
+block#      60  70  30  40  50
+t read      11  12  3   4   6
+t unpin     -   -   9   7   10
+```
+
+2-FIFO: replace smallest time read in first
+``` 
+# done time 10 same as above as no replacement
+# done time 11 and 12 - same as 0, 1 have smallest read in time 1,2
+
+Buffer      0   1   2   3   4
+block#      60  70  30  40  50
+t read      11  12  3   4   6
+t unpin     -   -   9   7   10
+```
+
+3-LRU: replace smallest time unpin first
+``` 
+# done time 10 same as above as no replacement
+# done time 11 and 12 - different
+
+Buffer      0   1   2   3   4
+block#      10  60  30  70  50
+t read      1   11  3   12   6
+t unpin     8   -   9   -   10
+```
+
+4-Clock: scan buffer pool clockwise after last replacement and replace first unpinned
+``` 
+# done time 10 same as above as no replacement
+# done time 11 and 12 - final same as FIFO and naive
+# because last replace == read in is buffer-4 -> scan clockwise
+# -> next is 0 for block-60, then buffer-1 for block-70
+
+Buffer      0   1   2   3   4
+block#      60  70  30  40  50
+t read      11  12  3   4   6
+t unpin     -   -   9   7   10
+```
