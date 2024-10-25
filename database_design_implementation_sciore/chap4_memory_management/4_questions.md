@@ -24,4 +24,25 @@ interface LogMgr {
 ### 4.2
 
 Explain why the method `BufferMgr.pin` is synchronized. What problem could occur if it wasn’t?
+- many concurrent threads might be able to pin the same block and modify it.
+- if that happens, there will be race condition, overwriting data, update loss.
 
+```java
+public class BufferMgr {
+    public synchronized Buffer pin(BlockId blk) {
+        try {
+            long timestamp = System.currentTimeMillis();
+            Buffer buff = tryToPin(blk);
+            while (buff == null && !waitingTooLong(timestamp)) {
+                wait(MAX_TIME);
+                buff = tryToPin(blk);
+            }
+            if (buff == null)
+                throw new BufferAbortException();
+            return buff;
+        } catch (InterruptedException e) {
+            throw new BufferAbortException();
+        }
+    }
+}
+```
