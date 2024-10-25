@@ -1,8 +1,8 @@
-package simpledb.jdbc.embedded;
+package com.simpledb.jdbc.embedded;
 
-import simpledb.jdbc.ConnectionAdapter;
-import simpledb.server.SimpleDB;
-import simpledb.tx.Transaction;
+import com.simpledb.jdbc.ConnectionAdapter;
+import com.simpledb.server.SimpleDB;
+import com.simpledb.tx.Transaction;
 
 import java.sql.SQLException;
 

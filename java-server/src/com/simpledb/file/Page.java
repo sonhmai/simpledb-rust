@@ -1,4 +1,4 @@
-package simpledb.file;
+package com.simpledb.file;
 
 import java.nio.ByteBuffer;
 import java.nio.charset.*;

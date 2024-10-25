@@ -1,9 +1,9 @@
-package simpledb.server;
+package com.simpledb.server;
 
-import simpledb.buffer.BufferMgr;
-import simpledb.file.FileMgr;
-import simpledb.log.LogMgr;
-import simpledb.tx.Transaction;
+import com.simpledb.buffer.BufferMgr;
+import com.simpledb.file.FileMgr;
+import com.simpledb.log.LogMgr;
+import com.simpledb.tx.Transaction;
 
 import java.io.File;
 

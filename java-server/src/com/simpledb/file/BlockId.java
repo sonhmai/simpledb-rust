@@ -1,4 +1,4 @@
-package simpledb.file;
+package com.simpledb.file;
 
 public class BlockId {
     private String filename;

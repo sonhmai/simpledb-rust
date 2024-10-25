@@ -1,10 +1,10 @@
-package simpledb.log;
+package com.simpledb.log;
 
 import java.util.Iterator;
 
-import simpledb.file.BlockId;
-import simpledb.file.FileMgr;
-import simpledb.file.Page;
+import com.simpledb.file.BlockId;
+import com.simpledb.file.FileMgr;
+import com.simpledb.file.Page;
 
 public class LogMgr {
   private FileMgr fm;

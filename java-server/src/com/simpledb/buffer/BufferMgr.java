@@ -1,6 +1,8 @@
-package simpledb.buffer;
+package com.simpledb.buffer;
 
-import simpledb.file.BlockId;
+import com.simpledb.file.BlockId;
+import com.simpledb.file.FileMgr;
+import com.simpledb.log.LogMgr;
 
 /**
  * A place for other components to access a disk block following protocol
@@ -9,6 +11,24 @@ import simpledb.file.BlockId;
  * 3. when client is done, it tells buffer manager to unpin it.
  */
 public class BufferMgr {
+    private Buffer[] bufferpool;
+    private int numAvailable;
+    private static final long MAX_TIME = 10000; // 10 seconds
+
+    /**
+     * Creates a buffer manager having the specified number
+     * of buffer slots.
+     * This constructor depends on a {@link FileMgr} and
+     * {@link com.simpledb.log.LogMgr LogMgr} object.
+     * @param numbuffs the number of buffer slots to allocate
+     */
+    public BufferMgr(FileMgr fm, LogMgr lm, int numbuffs) {
+        bufferpool = new Buffer[numbuffs];
+        numAvailable = numbuffs;
+        for (int i=0; i<numbuffs; i++)
+            bufferpool[i] = new Buffer(fm, lm);
+    }
+
     public synchronized Buffer pin(BlockId blk) {
         try {
             long timestamp = System.currentTimeMillis();

@@ -1,9 +1,9 @@
-package simpledb.tx;
+package com.simpledb.tx;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import simpledb.file.BlockId;
+import com.simpledb.file.BlockId;
 
 public class LockTable {
   private static final long MAX_TIME = 10000; // 10 seconds
