@@ -45,3 +45,10 @@ memory page
 
 ### Buffer Manager
 
+wait list
+- Suppose that the database engine has a lot of clients, all of whom are using a lot of buffers. It is possible for every buffer page to be pinned. In this case, the buffer manager cannot immediately satisfy a pin request. Instead, it places the client on a wait list. When a buffer becomes available, the buffer manager takes the client off the wait list so that it can complete the pin request. In other words, the client will not be aware of the buffer contention; the client will only notice that the engine seems to have slowed down.
+- deadlock: 2 clients waiting on the wait list for each other forever.
+- simpledb solution
+  - keeping track of how long client has been waiting for a buffer
+  - if more than a threshold like 10s, assuming deadlock, throwing an exception `BufferAbortException`
+  - client to handle exception e.g. retry transaction
