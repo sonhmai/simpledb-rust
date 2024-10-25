@@ -20,15 +20,60 @@ public class BufferMgr {
      * of buffer slots.
      * This constructor depends on a {@link FileMgr} and
      * {@link com.simpledb.log.LogMgr LogMgr} object.
+     *
      * @param numbuffs the number of buffer slots to allocate
      */
     public BufferMgr(FileMgr fm, LogMgr lm, int numbuffs) {
         bufferpool = new Buffer[numbuffs];
         numAvailable = numbuffs;
-        for (int i=0; i<numbuffs; i++)
+        for (int i = 0; i < numbuffs; i++)
             bufferpool[i] = new Buffer(fm, lm);
     }
 
+    /**
+     * Returns the number of available (i.e. unpinned) buffers.
+     *
+     * @return the number of available buffers
+     */
+    public synchronized int available() {
+        return numAvailable;
+    }
+
+    /**
+     * Flushes the dirty buffers modified by the specified transaction.
+     *
+     * @param txnum the transaction's id number
+     */
+    public synchronized void flushAll(int txnum) {
+        for (Buffer buff : bufferpool)
+            if (buff.modifyingTx() == txnum)
+                buff.flush();
+    }
+
+
+    /**
+     * Unpins the specified data buffer. If its pin count
+     * goes to zero, then notify any waiting threads.
+     *
+     * @param buff the buffer to be unpinned
+     */
+    public synchronized void unpin(Buffer buff) {
+        buff.unpin();
+        if (!buff.isPinned()) {
+            numAvailable++;
+            notifyAll();
+        }
+    }
+
+    /**
+     * Pins a buffer to the specified block, potentially
+     * waiting until a buffer becomes available.
+     * If no buffer becomes available within a fixed
+     * time period, then a {@link BufferAbortException} is thrown.
+     *
+     * @param blk a reference to a disk block
+     * @return the buffer pinned to that block
+     */
     public synchronized Buffer pin(BlockId blk) {
         try {
             long timestamp = System.currentTimeMillis();
@@ -45,6 +90,9 @@ public class BufferMgr {
         }
     }
 
+    private boolean waitingTooLong(long starttime) {
+        return System.currentTimeMillis() - starttime > MAX_TIME;
+    }
 
     /**
      * Tries to pin a buffer to the specified block.
@@ -70,4 +118,19 @@ public class BufferMgr {
         return buff;
     }
 
+    private Buffer findExistingBuffer(BlockId blk) {
+        for (Buffer buff : bufferpool) {
+            BlockId b = buff.block();
+            if (b != null && b.equals(blk))
+                return buff;
+        }
+        return null;
+    }
+
+    private Buffer chooseUnpinnedBuffer() {
+        for (Buffer buff : bufferpool)
+            if (!buff.isPinned())
+                return buff;
+        return null;
+    }
 }
