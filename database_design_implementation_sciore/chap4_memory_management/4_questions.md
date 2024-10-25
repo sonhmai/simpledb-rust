@@ -20,3 +20,8 @@ interface LogMgr {
     public Iterator<byte[]> iterator();
 }
 ```
+
+### 4.2
+
+Explain why the method `BufferMgr.pin` is synchronized. What problem could occur if it wasn’t?
+
