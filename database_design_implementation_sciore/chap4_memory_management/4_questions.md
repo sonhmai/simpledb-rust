@@ -113,3 +113,15 @@ block#      60  70  30  40  50
 t read      11  12  3   4   6
 t unpin     -   -   9   7   10
 ```
+
+### 4.9 buffer manager pin same block
+
+Suppose that two different clients each want to pin the same block but are placed on the `wait list` because no buffers are available. Consider the implementation of the SimpleDB class BufferMgr. Show that when a single buffer becomes available, both clients will be able to use it.
+
+
+
+### 4.10
+
+Consider the adage “Virtual is its own reward.” Comment on the cleverness of the pun, and discuss its applicability to the buffer manager.
+
+skip
