@@ -1,11 +1,11 @@
-package simpledb.tx;
+package com.simpledb.tx;
 
-import simpledb.buffer.Buffer;
-import simpledb.buffer.BufferMgr;
-import simpledb.file.BlockId;
-import simpledb.file.FileMgr;
-import simpledb.file.Page;
-import simpledb.log.LogMgr;
+import com.simpledb.buffer.Buffer;
+import com.simpledb.buffer.BufferMgr;
+import com.simpledb.file.BlockId;
+import com.simpledb.file.FileMgr;
+import com.simpledb.file.Page;
+import com.simpledb.log.LogMgr;
 
 public class Transaction {
   private static int nextTxNum = 0;

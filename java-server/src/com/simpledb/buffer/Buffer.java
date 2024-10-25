@@ -1,9 +1,9 @@
-package simpledb.buffer;
+package com.simpledb.buffer;
 
-import simpledb.file.BlockId;
-import simpledb.file.FileMgr;
-import simpledb.file.Page;
-import simpledb.log.LogMgr;
+import com.simpledb.file.BlockId;
+import com.simpledb.file.FileMgr;
+import com.simpledb.file.Page;
+import com.simpledb.log.LogMgr;
 
 /**
  * An individual buffer. A data-buffer wraps a page and stores information about

@@ -1,7 +1,7 @@
-package simpledb.jdbc.embedded;
+package com.simpledb.jdbc.embedded;
 
-import simpledb.jdbc.DriverAdapter;
-import simpledb.server.SimpleDB;
+import com.simpledb.jdbc.DriverAdapter;
+import com.simpledb.server.SimpleDB;
 
 import java.sql.SQLException;
 import java.util.Properties;

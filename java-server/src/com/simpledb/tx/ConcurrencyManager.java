@@ -1,9 +1,9 @@
-package simpledb.tx;
+package com.simpledb.tx;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import simpledb.file.BlockId;
+import com.simpledb.file.BlockId;
 
 /*
 * Concurrency Manager implements lock protocol using block-level granularity.

@@ -1,4 +1,4 @@
-package simpledb.jdbc;
+package com.simpledb.jdbc;
 
 import java.sql.*;
 import java.util.Properties;

@@ -1,6 +1,6 @@
-package simpledb.tx;
+package com.simpledb.tx;
 
-import simpledb.file.Page;
+import com.simpledb.file.Page;
 
 public interface LogRecord {
   static final int CHECKPOINT = 0;
