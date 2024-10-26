@@ -16,6 +16,7 @@ public class LogMgr {
     private String logfile;
     private Page logpage;
     private BlockId currentblk;
+    /// available LSN for next log record
     private int latestLSN = 0;
     private int lastSavedLSN = 0;
 
@@ -23,6 +24,7 @@ public class LogMgr {
         this.fm = fm;
         this.logfile = logfile;
         byte[] b = new byte[fm.blockSize()];
+        // allocate a single page to hold the last log block of the file
         logpage = new Page(b);
         int logsize = fm.length(logfile);
         if (logsize == 0) {
@@ -55,6 +57,12 @@ public class LogMgr {
      * Append new content to page and return an int Log Sequence Number of next log record.
      * Appending does not mean persisting to disk, log manager chooses when to persist separately.
      * Client can force a log record to disk by calling flush(int lsn).
+     * <p>
+     * Append assigns LSN sequentially starting from 1.
+     * Append places log records in the page from right to left. This allows iterator to read in reverse
+     * order from left to right (latest to earlier).
+     * Boundary value is written to the first four bytes of the page so
+     * the iterator will know where the records begin.
      * <p>
      * Get the boundary from the integer in the position 0 in the page.
      * If the current page is not enough, flush and add new block,
