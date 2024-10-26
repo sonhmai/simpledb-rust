@@ -1,12 +1,23 @@
 
 
-### 4.1. 
+### 4.1 log manager iterator and flush
 
 The code for LogMgr.iterator calls flush. Is this call necessary? Explain.
+- Yes. this is necessary to iterate from the latest record even if they are only in memory (not persisted to disk yet).
+- calling `flush` writes the latest log page to disk.
+- `LogIterator` uses the File Manager to read blocks of log file from disk.
 
 ```java
-interface LogMgr {
-    
+import com.simpledb.file.BlockId;
+import com.simpledb.file.FileMgr;
+
+class LogMgr {
+    private FileMgr fm;
+    private BlockId currentblk;
+    private Page logpage;
+    private int lastSavedLSN = 0;
+    private int latestLSN = 0;
+
     public LogMgr(FileMgr fm, String logfile);
 
     public int append(byte[] rec);
@@ -17,7 +28,15 @@ interface LogMgr {
     // returns a Java iterator for log records.
     // reverse order: from most recent, moving backwards thru log file.
     // This order because of how recovery manager wants to see them.
-    public Iterator<byte[]> iterator();
+    public Iterator<byte[]> iterator() {
+        flush();
+        return new LogIterator(fm, currentblk);
+    }
+
+    private void flush() {
+        fm.write(currentblk, logpage);
+        lastSavedLSN = latestLSN;
+    }
 }
 ```
 
