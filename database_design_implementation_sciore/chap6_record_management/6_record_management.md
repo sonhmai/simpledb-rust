@@ -12,10 +12,10 @@ what is record manager responsible for?
 - how to access records in a file
 
 questions to address when designing a `record manager`
-1. should each record be placed entirely within one block?
-2. will all records in a block be from the same table?
-3. is each field representable using a predetermined number of bytes?
-4. where should each field value be positioned within its record?
+1. `spanned vs unspanned`: each record be placed entirely within one block?
+2. `homogeneous vs non file`: all records in a block be from the same table?
+3. `fixed- vs variable-length`: is each field representable using a predetermined number of bytes?
+4. `field placing`: where should each field value be positioned within its record?
 
 issues and solutions
 1. variable-length fields, records -> `ID table`
@@ -24,6 +24,15 @@ issues and solutions
 4. how to determine field offset in record -> byte padding or search
 
 ![img.png](img_spanned_vs_unspanned_records.png)
+
+
+implementing a file of records
+1. simple impl
+2. var-length fields
+3. spanned records
+4. non-homogeneous records
+
+![img.png](img_record_page.png)
 
 SimpleDB API for record management
 ```
