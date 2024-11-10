@@ -6,6 +6,7 @@ import com.simpledb.file.BlockId;
 import com.simpledb.file.FileMgr;
 import com.simpledb.file.Page;
 import com.simpledb.log.LogMgr;
+import com.simpledb.transaction.RecoveryMgr;
 
 public class Transaction {
   private static int nextTxNum = 0;
