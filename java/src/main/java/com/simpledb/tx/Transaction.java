@@ -6,6 +6,7 @@ import com.simpledb.file.BlockId;
 import com.simpledb.file.FileMgr;
 import com.simpledb.file.Page;
 import com.simpledb.log.LogMgr;
+import com.simpledb.tx.RecoveryMgr;
 
 public class Transaction {
   private static int nextTxNum = 0;
@@ -15,7 +16,7 @@ public class Transaction {
   private BufferMgr bm;
   private FileMgr fm;
   private int txnum;
-  private BufferList mybuffers;
+//  private BufferList mybuffers;
 
   public Transaction(FileMgr fm, LogMgr lm, BufferMgr bm) {
     this.fm = fm;
@@ -23,21 +24,21 @@ public class Transaction {
     txnum = nextTxNumber();
     recoveryMgr = new RecoveryMgr(this, txnum, lm, bm);
     concurMgr = new ConcurrencyMgr();
-    mybuffers = new BufferList(bm);
+//    mybuffers = new BufferList(bm);
   }
 
   public void commit() {
     recoveryMgr.commit();
     System.out.println("transaction " + txnum + " committed");
     concurMgr.release();
-    mybuffers.unpinAll();
+//    mybuffers.unpinAll();
   }
 
   public void rollback() {
     recoveryMgr.rollback();
     System.out.println("transaction " + txnum + " rolled back");
     concurMgr.release();
-    mybuffers.unpinAll();
+//    mybuffers.unpinAll();
   }
 
   public void recover() {
@@ -46,46 +47,33 @@ public class Transaction {
   }
 
   public void pin(BlockId blk) {
-    mybuffers.pin(blk);
+//    mybuffers.pin(blk);
   }
 
   public void unpin(BlockId blk) {
-    mybuffers.unpin(blk);
+//    mybuffers.unpin(blk);
   }
 
   public int getInt(BlockId blk, int offset) {
     concurMgr.sLock(blk);
-    Buffer buff = mybuffers.getBuffer(blk);
-    return buff.contents().getInt(offset);
+//    Buffer buff = mybuffers.getBuffer(blk);
+//    return buff.contents().getInt(offset);
+    return 1;
   }
 
   public String getString(BlockId blk, int offset) {
     concurMgr.sLock(blk);
-    Buffer buff = mybuffers.getBuffer(blk);
-    return buff.contents().getString(offset);
+//    Buffer buff = mybuffers.getBuffer(blk);
+//    return buff.contents().getString(offset);
+    return "test";
   }
 
   public void setInt(BlockId blk, int offset, int val, boolean okToLog) {
     concurMgr.xLock(blk);
-    Buffer buff = mybuffers.getBuffer(blk);
-    int lsn = -1;
-    if (okToLog)
-      lsn = recoveryMgr.setInt(buff, offset);
-    Page p = buff.contents();
-    p.setInt(offset, val);
-    buff.setModified(txnum, lsn);
   }
 
   public void setString(BlockId blk, int offset, String val, boolean okToLog) {
     concurMgr.xLock(blk);
-    Buffer buff = mybuffers.getBuffer(blk);
-    int lsn = -1;
-    if (okToLog)
-      lsn = recoveryMgr.setString(buff, offset);
-
-    Page p = buff.contents();
-    p.setString(offset, val);
-    buff.setModified(txnum, lsn);
   }
 
   private static synchronized int nextTxNumber() {

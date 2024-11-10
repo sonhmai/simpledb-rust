@@ -15,7 +15,7 @@ public class TableScan {
   }
 
   public void delete() {
-    rp.delete(currentslot):
+    rp.delete(currentslot);
   }
 
   public void close() {
