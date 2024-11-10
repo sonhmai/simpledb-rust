@@ -9,50 +9,52 @@ import com.simpledb.buffer.BufferMgr;
 import com.simpledb.file.BlockId;
 import com.simpledb.log.LogMgr;
 
-public class RecoveryManager {
+public class RecoveryMgr {
   private LogMgr lm;
   private BufferMgr bm;
   private Transaction tx;
   private int txnum;
 
-  public RecoveryManager(Transaction tx, int txnum, LogMgr lm, BufferMgr bm) {
+  public RecoveryMgr(Transaction tx, int txnum, LogMgr lm, BufferMgr bm) {
     this.tx = tx;
     this.txnum = txnum;
     this.lm = lm;
     this.bm = bm;
-    StartRecord.writeToLog(lm, txnum);
+//    StartRecord.writeToLog(lm, txnum);
   }
 
   public void commit() {
     bm.flushAll(txnum);
-    int lsn = CommitRecord.writeToLog(lm, txnum);
-    lm.flush(lsn);
+//    int lsn = CommitRecord.writeToLog(lm, txnum);
+//    lm.flush(lsn);
   }
 
   public void rollback() {
     doRollback();
     bm.flushAll(txnum);
-    int lsn = RollbackRecord.writeToLog(lm, txnum);
-    lm.flush(lsn);
+//    int lsn = RollbackRecord.writeToLog(lm, txnum);
+//    lm.flush(lsn);
   }
 
   public void recover() {
     doRecover();
     bm.flushAll(txnum);
-    int lsn = CheckpointRecord.writeToLog(lm);
-    lm.flush(lsn);
+//    int lsn = CheckpointRecord.writeToLog(lm);
+//    lm.flush(lsn);
   }
 
   public int setInt(Buffer buff, int offset) {
     int oldval = buff.contents().getInt(offset);
     BlockId blk = buff.block();
-    return SetIntRecord.writeToLog(lm, txnum, blk, offset, oldval);
+//    return SetIntRecord.writeToLog(lm, txnum, blk, offset, oldval);
+    return 1;
   }
 
   public int setString(Buffer buff, int offset) {
     String oldval = buff.contents().getString(offset);
     BlockId blk = buff.block();
-    return SetStringRecord.writeToLog(lm, txnum, blk, offset, oldval);
+//    return SetStringRecord.writeToLog(lm, txnum, blk, offset, oldval);
+    return 1;
   }
 
   /*
