@@ -68,6 +68,10 @@ public class Transaction {
     return "test";
   }
 
+  public int blockSize() {
+    return fm.blockSize();
+  }
+
   public void setInt(BlockId blk, int offset, int val, boolean okToLog) {
     concurMgr.xLock(blk);
   }

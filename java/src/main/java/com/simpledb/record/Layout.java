@@ -9,4 +9,8 @@ public class Layout {
   public Layout(Schema schema) {
     this.schema = schema;
   }
+
+  public int slotSize() {
+    return 1;
+  }
 }
