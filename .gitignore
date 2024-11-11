@@ -25,3 +25,5 @@ Cargo.lock
 /target
 .idea/
 .vscode/
+
+simple-db.iml
