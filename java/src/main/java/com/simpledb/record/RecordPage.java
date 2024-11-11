@@ -7,24 +7,34 @@ public class RecordPage {
 
   public static  final int EMPTY = 0, USED = 1; // 4-bytes empty/inuse flag
 
-  private BlockId blk;
-  private Layout layout; // layout of this record type in the page which applies for all records
-  private Transaction tx;
+  private final BlockId blk;
+  private final Layout layout; // layout of this record type in the page which applies for all records
+  private final Transaction tx;
+
+  public RecordPage(Transaction tx, BlockId blk, Layout layout) {
+    this.blk = blk;
+    this.layout = layout;
+    this.tx = tx;
+  }
 
   public int getInt(int slot, String fieldname) {
-    return 1;
+    int fieldPos = offset(slot) + layout.offset(fieldname);
+    return tx.getInt(blk, fieldPos);
   }
 
   public String getString(int slot, String fieldname) {
-    return "";
+    int fieldPos = offset(slot) + layout.offset(fieldname);
+    return tx.getString(blk, fieldPos);
   }
 
   public void setInt(int slot, String fieldname, int value) {
-
+    int fieldPos = offset(slot) + layout.offset(fieldname);
+    tx.setInt(blk, fieldPos, value, true);
   }
 
   public void setString(int slot, String fieldname, String value) {
-
+    int fieldPos = offset(slot) + layout.offset(fieldname);
+    tx.setString(blk, fieldPos, value, true);
   }
 
   /** Sets all record slots in a page to default values: empty/inuse flag to EMPTY, integers to 0,
@@ -51,8 +61,18 @@ public class RecordPage {
     return searchAfter(slot, USED); // search for a used slot after this one
   }
 
+  /**
+   * Look for a new empty slow after the given one.
+   * @param slot index of current slot to search for
+   * @return -1 if no new slow after given slot, slot index if found.
+   */
   public int insertAfter(int slot) {
-    return 0;
+    int emptySlot = searchAfter(slot, EMPTY);
+    // search returns -1 if no new empty slow found
+    if (emptySlot > 0) {
+      setFlag(emptySlot, USED);
+    }
+    return emptySlot;
   }
 
   private void setFlag(int slot, int flag) {
