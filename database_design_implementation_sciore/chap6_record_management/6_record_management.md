@@ -1,5 +1,7 @@
 # 6 - Record Management
 
+![img.png](img_record_read_path.png)
+
 why?
 - encode and decode what values are in a binary disk block.
 - works at the record abstract level
