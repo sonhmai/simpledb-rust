@@ -1,8 +1,10 @@
 package com.simpledb.record;
 
+import com.simpledb.query.Constant;
+import com.simpledb.query.UpdateScan;
 import com.simpledb.tx.Transaction;
 
-public class TableScan {
+public class TableScan implements UpdateScan {
 
   private Transaction transaction;
   private String tableName;
@@ -16,6 +18,16 @@ public class TableScan {
 
   public void delete() {
     rp.delete(currentslot);
+  }
+
+  @Override
+  public RID getRid() {
+    return null;
+  }
+
+  @Override
+  public void moveToRid(RID rid) {
+
   }
 
   public void close() {
@@ -39,10 +51,25 @@ public class TableScan {
     return 1;
   }
 
+  @Override
+  public void setVal(String fldname, Constant val) {
+
+  }
+
   public void setInt(String tablename, int value) {}
 
   public String getString(String tablename) {
     return "default";
+  }
+
+  @Override
+  public Constant getVal(String fldname) {
+    return null;
+  }
+
+  @Override
+  public boolean hasField(String fldname) {
+    return false;
   }
 
   public void setString(String tablename, String value) {}
