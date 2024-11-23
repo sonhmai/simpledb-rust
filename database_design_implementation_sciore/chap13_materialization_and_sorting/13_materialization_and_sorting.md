@@ -5,26 +5,36 @@
   - sort
   - groupby
   - mergejoin
-- materialization implementation of an operator
+- operator impl: `materialization` vs `pipelined`
 - materialize operator
-  - temp table
-  - input records
+  - preprocess input records
+  - save output records in temp table(s)
   - no recomputation
-  - more efficient than only pipelined operators
-- external sorting algo
-  - temp table
+  - pros: more efficient than only pipelined operators
+  - cons: 
+    - IO - write/read overhead to temp tables
+    - compute - preprocessing entire input
+- temp table
+  - not created by table manager, not in system catalog
+  - auto deleted by db when not needed anymore
+  - recovery manager does not log change to temp tables
+- sort(inputTable, fieldNames)
+  - used in sql order by, operator `groupby`, `mergejoin`
   - mergesort
-- mergesort
-  - staging area
+    - staging area
 - groupby
 - mergejoin algo
 
 
+code entities of this chapter
 ```java 
 class TempTable
 
-
 interface Plan
+  Scan open()
+  int blocksAccessed()
+  int recordsOutput()
+  Schema schema()
 
 class MaterializePlan implements Plan
 
@@ -34,6 +44,7 @@ class SortScan implements Scan
 class GroupByPlan implements Plan 
 class GroupByScan implements Scan 
 class GroupValue
+
 interface AggregationFn
 class MaxFn implements AggregationFn
 
