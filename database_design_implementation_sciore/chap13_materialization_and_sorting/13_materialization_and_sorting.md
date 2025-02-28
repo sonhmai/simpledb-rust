@@ -54,6 +54,6 @@ class MergeJoinScan implements Scan
 ```
 
 
-![img.png](img_when_materialize_operator.png)
+![img.png](./img_when_materialize_operator.png)
 
-![img.png](img_query_tree_with_sort_node.png)
+![img.png](./img_query_tree_with_sort_node.png)

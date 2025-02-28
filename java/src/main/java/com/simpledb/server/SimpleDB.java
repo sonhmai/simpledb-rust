@@ -5,6 +5,7 @@ import java.io.File;
 import com.simpledb.file.FileMgr;
 import com.simpledb.log.LogMgr;
 import com.simpledb.buffer.BufferMgr;
+import com.simpledb.metadata.MetadataMgr;
 import com.simpledb.tx.Transaction;
 
 /**
@@ -20,6 +21,7 @@ public class SimpleDB {
     private FileMgr fm;
     private BufferMgr bm;
     private LogMgr lm;
+    private  MetadataMgr mdm;
 
     /**
      * A constructor useful for debugging.
@@ -51,6 +53,7 @@ public class SimpleDB {
             System.out.println("recovering existing database");
             tx.recover();
         }
+        mdm = new MetadataMgr(isnew, tx);
         tx.commit();
     }
 
@@ -70,6 +73,10 @@ public class SimpleDB {
 
     public LogMgr logMgr() {
         return lm;
+    }
+
+    public MetadataMgr mdMgr() {
+        return mdm;
     }
 
     public BufferMgr bufferMgr() {

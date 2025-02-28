@@ -3,97 +3,140 @@ package com.simpledb.record;
 import com.simpledb.file.BlockId;
 import com.simpledb.tx.Transaction;
 
+import static java.sql.Types.INTEGER;
+
+/**
+ * Store a record at a given location in a block. 
+ * @author Edward Sciore
+ */
 public class RecordPage {
+   public static final int EMPTY = 0, USED = 1;
+   private Transaction tx;
+   private BlockId blk;
+   private Layout layout;
 
-  public static  final int EMPTY = 0, USED = 1; // 4-bytes empty/inuse flag
+   public RecordPage(Transaction tx, BlockId blk, Layout layout) {
+      this.tx = tx;
+      this.blk = blk;
+      this.layout = layout;
+      tx.pin(blk);
+   }
 
-  private final BlockId blk;
-  private final Layout layout; // layout of this record type in the page which applies for all records
-  private final Transaction tx;
+   /**
+    * Return the integer value stored for the
+    * specified field of a specified slot.
+    * @param fldname the name of the field.
+    * @return the integer stored in that field
+    */
+   public int getInt(int slot, String fldname) {
+      int fldpos = offset(slot) + layout.offset(fldname);
+      return tx.getInt(blk, fldpos);
+   }
 
-  public RecordPage(Transaction tx, BlockId blk, Layout layout) {
-    this.blk = blk;
-    this.layout = layout;
-    this.tx = tx;
-  }
+   /**
+    * Return the string value stored for the
+    * specified field of the specified slot.
+    * @param fldname the name of the field.
+    * @return the string stored in that field
+    */
+   public String getString(int slot, String fldname) {
+      int fldpos = offset(slot) + layout.offset(fldname);
+      return tx.getString(blk, fldpos);
+   }
 
-  public int getInt(int slot, String fieldname) {
-    int fieldPos = offset(slot) + layout.offset(fieldname);
-    return tx.getInt(blk, fieldPos);
-  }
+   /**
+    * Store an integer at the specified field
+    * of the specified slot.
+    * @param fldname the name of the field
+    * @param val the integer value stored in that field
+    */
+   public void setInt(int slot, String fldname, int val) {
+      int fldpos = offset(slot) + layout.offset(fldname);
+      tx.setInt(blk, fldpos, val, true);
+   }
 
-  public String getString(int slot, String fieldname) {
-    int fieldPos = offset(slot) + layout.offset(fieldname);
-    return tx.getString(blk, fieldPos);
-  }
+   /**
+    * Store a string at the specified field
+    * of the specified slot.
+    * @param fldname the name of the field
+    * @param val the string value stored in that field
+    */
+   public void setString(int slot, String fldname, String val) {
+      int fldpos = offset(slot) + layout.offset(fldname);
+      tx.setString(blk, fldpos, val, true);
+   }
+   
+   public void delete(int slot) {
+      setFlag(slot, EMPTY);
+   }
+   
+   /** Use the layout to format a new block of records.
+    *  These values should not be logged 
+    *  (because the old values are meaningless).
+    */ 
+   public void format() {
+      int slot = 0;
+      while (isValidSlot(slot)) {
+         tx.setInt(blk, offset(slot), EMPTY, false); 
+         Schema sch = layout.schema();
+         for (String fldname : sch.fields()) {
+            int fldpos = offset(slot) + layout.offset(fldname);
+            if (sch.type(fldname) == INTEGER)
+               tx.setInt(blk, fldpos, 0, false);
+            else
+               tx.setString(blk, fldpos, "", false);
+         }
+         slot++;
+      }
+   }
 
-  public void setInt(int slot, String fieldname, int value) {
-    int fieldPos = offset(slot) + layout.offset(fieldname);
-    tx.setInt(blk, fieldPos, value, true);
-  }
+   public int nextAfter(int slot) {
+      return searchAfter(slot, USED);
+   }
+ 
+   public int insertAfter(int slot) {
+      int newslot = searchAfter(slot, EMPTY);
+      if (newslot >= 0)
+         setFlag(newslot, USED);
+      return newslot;
+   }
+  
+   public BlockId block() {
+      return blk;
+   }
+   
+   // Private auxiliary methods
+   
+   /**
+    * Set the record's empty/inuse flag.
+    */
+   private void setFlag(int slot, int flag) {
+      tx.setInt(blk, offset(slot), flag, true); 
+   }
 
-  public void setString(int slot, String fieldname, String value) {
-    int fieldPos = offset(slot) + layout.offset(fieldname);
-    tx.setString(blk, fieldPos, value, true);
-  }
-
-  /** Sets all record slots in a page to default values: empty/inuse flag to EMPTY, integers to 0,
-   * strings to "" */
-  public void format() {
-
-  }
-
-  /**
-   * sets record flag to EMPTY.
-   * @param slot index of the slot to set to empty
-   */
-  public void delete(int slot) {
-    setFlag(slot, EMPTY);
-  }
-
-  /**
-   * looks for a USED slot after this one.
-   *
-   * @param slot index of the slot to search after
-   * @return -1 if not found used slot after current or offset to the slot if found
-   */
-  public int nextAfter(int slot) {
-    return searchAfter(slot, USED); // search for a used slot after this one
-  }
-
-  /**
-   * Look for a new empty slow after the given one.
-   * @param slot index of current slot to search for
-   * @return -1 if no new slow after given slot, slot index if found.
-   */
-  public int insertAfter(int slot) {
-    int emptySlot = searchAfter(slot, EMPTY);
-    // search returns -1 if no new empty slow found
-    if (emptySlot > 0) {
-      setFlag(emptySlot, USED);
-    }
-    return emptySlot;
-  }
-
-  private void setFlag(int slot, int flag) {
-    tx.setInt(blk, offset(slot), flag, true);
-  }
-
-  private int searchAfter(int slot, int flag) {
-    slot++;
-    while (isValidSlot(slot)) {
-      if (tx.getInt(blk, offset(slot)) == flag)
-        return slot;
+   private int searchAfter(int slot, int flag) {
       slot++;
-    }
-    return -1;
-  }
+      while (isValidSlot(slot)) {
+         if (tx.getInt(blk, offset(slot)) == flag)
+            return slot;
+         slot++;
+      }
+      return -1;
+   }
 
-  private boolean isValidSlot(int slot) {
-    return offset(slot + 1) <= tx.blockSize();
-  }
+   private boolean isValidSlot(int slot) {
+      return offset(slot+1) <= tx.blockSize();
+   }
 
-  private int offset(int slot) {
-    return slot * layout.slotSize();
-  }
+   private int offset(int slot) {
+      return slot * layout.slotSize();
+   }
 }
+
+
+
+
+
+
+
+

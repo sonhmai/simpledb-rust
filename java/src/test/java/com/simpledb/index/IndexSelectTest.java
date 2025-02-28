@@ -1,6 +1,5 @@
-package com.simpledb.index.query;
+package com.simpledb.index;
 
-import com.simpledb.index.Index;
 import com.simpledb.index.planner.IndexSelectPlan;
 import com.simpledb.metadata.IndexInfo;
 import com.simpledb.metadata.MetadataMgr;
