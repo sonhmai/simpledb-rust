@@ -22,6 +22,10 @@ public class IndexSelectTest {
 
         // Find the index on StudentId.
         Map<String, IndexInfo> indexes = mdm.getIndexInfo("enroll", tx);
+        if (!indexes.containsKey("studentid")) {
+            throw new IllegalStateException("expect index studentid to be available (not null).");
+        }
+
         IndexInfo sidIdx = indexes.get("studentid");
 
         // Get the plan for the Enroll table
@@ -45,7 +49,7 @@ public class IndexSelectTest {
         // Retrieve all index records having the specified dataval.
         idx.beforeFirst(c);
         while (idx.next()) {
-            // Use the datarid to go to the corresponding Enroll record.
+            // Use the datarid to go to the corresponding `Enroll` record.
             RID datarid = idx.getDataRid();
             s.moveToRid(datarid);  // table scans can move to a specified RID.
             System.out.println(s.getString("grade"));

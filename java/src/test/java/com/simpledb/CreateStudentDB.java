@@ -2,6 +2,7 @@ package com.simpledb;
 
 import com.simpledb.jdbc.embedded.EmbeddedDriver;
 
+import java.io.File;
 import java.sql.Connection;
 import java.sql.Driver;
 import java.sql.SQLException;
@@ -9,15 +10,19 @@ import java.sql.Statement;
 
 public class CreateStudentDB {
     public static void main(String[] args) throws SQLException {
+        // cleanup old data first
+        File dbDir = new File("studentdb");
+        FileIO.deleteDirectory(dbDir);
+
         Driver d = new EmbeddedDriver();
         String url = "jdbc:simpledb:studentdb";
-
         Connection conn = d.connect(url, null);
         Statement stmt = conn.createStatement();
+
+        // Table STUDENT
         String s = "create table STUDENT(SId int, SName varchar(10), MajorId int, GradYear int)";
         stmt.executeUpdate(s);
         System.out.println("Table STUDENT created.");
-
         s = "insert into STUDENT(SId, SName, MajorId, GradYear) values ";
         String[] studvals = {"(1, 'joe', 10, 2021)",
             "(2, 'amy', 20, 2020)",
@@ -32,6 +37,7 @@ public class CreateStudentDB {
             stmt.executeUpdate(s + studvals[i]);
         System.out.println("STUDENT records inserted.");
 
+        // Table DEPT
         s = "create table DEPT(DId int, DName varchar(8))";
         stmt.executeUpdate(s);
         System.out.println("Table DEPT created.");
@@ -76,6 +82,10 @@ public class CreateStudentDB {
         s = "create table ENROLL(EId int, StudentId int, SectionId int, Grade varchar(2))";
         stmt.executeUpdate(s);
         System.out.println("Table ENROLL created.");
+
+        s = "create index studentid on ENROLL(StudentId);";
+        stmt.executeUpdate(s);
+        System.out.println("Index studentid on table ENROLL created.");
 
         s = "insert into ENROLL(EId, StudentId, SectionId, Grade) values ";
         String[] enrollvals = {"(14, 1, 13, 'A')",
