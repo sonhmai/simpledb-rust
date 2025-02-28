@@ -9,7 +9,7 @@
     <packaging>pom</packaging>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <maven.compiler.release>21</maven.compiler.release>
+        <maven.compiler.release>11</maven.compiler.release>
         <derby.version>10.17.1.0</derby.version>
         <junit.version>5.11.0</junit.version>
     </properties>
