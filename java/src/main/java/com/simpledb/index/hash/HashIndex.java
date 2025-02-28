@@ -80,6 +80,7 @@ public class HashIndex implements Index {
 	 * @see Index#insert(Constant, RID)
 	 */
 	public void insert(Constant val, RID rid) {
+		System.out.println("index insert val=" + val + " rid=" + rid);
 		beforeFirst(val);
 		ts.insert();
 		ts.setInt("block", rid.blockNumber());

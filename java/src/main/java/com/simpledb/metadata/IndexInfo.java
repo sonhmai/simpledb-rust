@@ -15,7 +15,6 @@ import static java.sql.Types.INTEGER;
  * estimate the costs of using the index,
  * and to obtain the layout of the index records.
  * Its methods are essentially the same as those of Plan.
- * @author Edward Sciore
  */
 public class IndexInfo {
    private String idxname, fldname;

@@ -27,6 +27,7 @@ public class IndexSelectTest {
         }
 
         IndexInfo sidIdx = indexes.get("studentid");
+        System.out.println("sidIdx: " + sidIdx);
 
         // Get the plan for the Enroll table
         Plan enrollplan = new TablePlan(tx, "enroll", mdm);
@@ -41,18 +42,18 @@ public class IndexSelectTest {
         tx.commit();
     }
 
-    private static void useIndexManually(IndexInfo ii, Plan p, Constant c) {
+    private static void useIndexManually(IndexInfo indexInfo, Plan p, Constant constant) {
         // Open a scan on the table.
         TableScan s = (TableScan) p.open();  //must be a table scan
-        Index idx = ii.open();
+        Index idx = indexInfo.open();
 
-        // Retrieve all index records having the specified dataval.
-        idx.beforeFirst(c);
+        // Retrieve all index records having the specified constant value=6.
+        idx.beforeFirst(constant);
         while (idx.next()) {
             // Use the datarid to go to the corresponding `Enroll` record.
             RID datarid = idx.getDataRid();
             s.moveToRid(datarid);  // table scans can move to a specified RID.
-            System.out.println(s.getString("grade"));
+            System.out.println("Using index manually: " + s.getString("grade"));
         }
         idx.close();
         s.close();
