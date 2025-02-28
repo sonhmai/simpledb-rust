@@ -1,34 +1,70 @@
 package com.simpledb.jdbc.embedded;
 
 import com.simpledb.jdbc.ConnectionAdapter;
+import com.simpledb.plan.Planner;
 import com.simpledb.server.SimpleDB;
 import com.simpledb.tx.Transaction;
 
 import java.sql.SQLException;
 
-public class EmbeddedConnection extends ConnectionAdapter {
-    private SimpleDB db;
-    private Transaction currentTx;
+/**
+ * The embedded implementation of Connection.
+ * @author Edward Sciore
+ */
 
-    public EmbeddedConnection(SimpleDB db) {
-        this.db = db;
-        this.currentTx = db.newTx();
-    }
+class EmbeddedConnection extends ConnectionAdapter {
+   private SimpleDB db;
+   private Transaction currentTx;
+   private Planner planner;
 
-    @Override
-    public void close() throws SQLException {
-        currentTx.commit();
-    }
+   /**
+    * Creates a connection
+    * and begins a new transaction for it.
+    * @throws RemoteException
+    */
+   public EmbeddedConnection(SimpleDB db) {
+      this.db = db;
+      currentTx = db.newTx();
+      planner = db.planner();
+   }
 
-    @Override
-    public void commit() throws SQLException {
-        currentTx.commit();
-        this.currentTx = db.newTx();
-    }
+   /**
+    * Creates a new Statement for this connection.
+    */
+   public EmbeddedStatement createStatement() throws SQLException {
+      return new EmbeddedStatement(this, planner);
+   }
 
-    @Override
-    public void rollback() throws SQLException {
-        currentTx.rollback();
-        this.currentTx = db.newTx();
-    }
+   /**
+    * Closes the connection by committing the current transaction.
+    */
+   public void close() throws SQLException {
+      currentTx.commit();
+   }
+
+   /**
+    * Commits the current transaction and begins a new one.
+    */
+   public void commit() throws SQLException {
+      currentTx.commit();
+      currentTx = db.newTx();
+   }
+
+   /**
+    * Rolls back the current transaction and begins a new one.
+    */
+   public void rollback() throws SQLException {
+      currentTx.rollback();
+      currentTx = db.newTx();
+   }
+
+   /**
+    * Returns the transaction currently associated with
+    * this connection. Not public. Called by other JDBC classes.
+    * @return the transaction associated with this connection
+    */
+   Transaction getTransaction() {  
+      return currentTx;
+   }
 }
+

@@ -1,5 +1,6 @@
 package com.simpledb.query;
 
+import com.simpledb.plan.Plan;
 import com.simpledb.record.Schema;
 
 import java.util.ArrayList;
@@ -47,6 +48,21 @@ public class Predicate {
          if (!t.isSatisfied(s))
             return false;
       return true;
+   }
+
+   /** 
+    * Calculate the extent to which selecting on the predicate 
+    * reduces the number of records output by a query.
+    * For example if the reduction factor is 2, then the
+    * predicate cuts the size of the output in half.
+    * @param p the query's plan
+    * @return the integer reduction factor.
+    */ 
+   public int reductionFactor(Plan p) {
+      int factor = 1;
+      for (Term t : terms)
+         factor *= t.reductionFactor(p);
+      return factor;
    }
 
    /**

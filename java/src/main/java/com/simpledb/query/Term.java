@@ -1,5 +1,6 @@
 package com.simpledb.query;
 
+import com.simpledb.plan.Plan;
 import com.simpledb.record.Schema;
 
 /**
@@ -32,6 +33,37 @@ public class Term {
       Constant lhsval = lhs.evaluate(s);
       Constant rhsval = rhs.evaluate(s);
       return rhsval.equals(lhsval);
+   }
+   
+   /**
+    * Calculate the extent to which selecting on the term reduces 
+    * the number of records output by a query.
+    * For example if the reduction factor is 2, then the
+    * term cuts the size of the output in half.
+    * @param p the query's plan
+    * @return the integer reduction factor.
+    */
+   public int reductionFactor(Plan p) {
+      String lhsName, rhsName;
+      if (lhs.isFieldName() && rhs.isFieldName()) {
+         lhsName = lhs.asFieldName();
+         rhsName = rhs.asFieldName();
+         return Math.max(p.distinctValues(lhsName),
+                         p.distinctValues(rhsName));
+      }
+      if (lhs.isFieldName()) {
+         lhsName = lhs.asFieldName();
+         return p.distinctValues(lhsName);
+      }
+      if (rhs.isFieldName()) {
+         rhsName = rhs.asFieldName();
+         return p.distinctValues(rhsName);
+      }
+      // otherwise, the term equates constants
+      if (lhs.asConstant().equals(rhs.asConstant()))
+         return 1;
+      else
+         return Integer.MAX_VALUE;
    }
    
    /**

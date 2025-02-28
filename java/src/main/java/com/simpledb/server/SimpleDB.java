@@ -6,12 +6,11 @@ import com.simpledb.file.FileMgr;
 import com.simpledb.log.LogMgr;
 import com.simpledb.buffer.BufferMgr;
 import com.simpledb.metadata.MetadataMgr;
+import com.simpledb.plan.*;
 import com.simpledb.tx.Transaction;
 
 /**
  * The class that configures the system.
- *
- * @author Edward Sciore
  */
 public class SimpleDB {
     public static int BLOCK_SIZE = 400;
@@ -21,7 +20,8 @@ public class SimpleDB {
     private FileMgr fm;
     private BufferMgr bm;
     private LogMgr lm;
-    private  MetadataMgr mdm;
+    private MetadataMgr mdm;
+    private Planner planner;
 
     /**
      * A constructor useful for debugging.
@@ -54,6 +54,9 @@ public class SimpleDB {
             tx.recover();
         }
         mdm = new MetadataMgr(isnew, tx);
+        QueryPlanner qp = new BasicQueryPlanner(mdm);
+        UpdatePlanner up = new BasicUpdatePlanner(mdm);
+        planner = new Planner(qp, up);
         tx.commit();
     }
 
@@ -65,8 +68,10 @@ public class SimpleDB {
         return new Transaction(fm, lm, bm);
     }
 
+    public Planner planner() {
+        return planner;
+    }
 
-    // These methods aid in debugging
     public FileMgr fileMgr() {
         return fm;
     }
