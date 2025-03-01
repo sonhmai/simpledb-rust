@@ -27,3 +27,6 @@ Cargo.lock
 .vscode/
 
 simple-db.iml
+
+# ignore the database folder created in tests
+studentdb/

@@ -5,38 +5,85 @@ import com.simpledb.file.Page;
 import java.util.HashMap;
 import java.util.Map;
 
+import static java.sql.Types.INTEGER;
+
 /**
- * Layout contains physical info about a record.
+ * Description of the structure of a record.
+ * It contains the name, type, length and offset of
+ * each field of the table.
+ * @author Edward Sciore
+ *
  */
 public class Layout {
+   private Schema schema;
+   private Map<String,Integer> offsets;
+   private int slotsize;
 
-  private Map<String, Integer> offsets; // pre-calculated offsets of the fields within a record
+   /**
+    * This constructor creates a Layout object from a schema. 
+    * This constructor is used when a table 
+    * is created. It determines the physical offset of 
+    * each field within the record.
+    * @param tblname the name of the table
+    * @param schema the schema of the table's records
+    */
+   public Layout(Schema schema) {
+      this.schema = schema;
+      offsets  = new HashMap<>();
+      int pos = Integer.BYTES; // leave space for the empty/inuse flag
+      for (String fldname : schema.fields()) {
+         offsets.put(fldname, pos);
+         pos += lengthInBytes(fldname);
+      }
+      slotsize = pos;
+   }
 
-  private final Schema schema;
+   /**
+    * Create a Layout object from the specified metadata.
+    * This constructor is used when the metadata
+    * is retrieved from the catalog.
+    * @param tblname the name of the table
+    * @param schema the schema of the table's records
+    * @param offsets the already-calculated offsets of the fields within a record
+    * @param recordlen the already-calculated length of each record
+    */
+   public Layout(Schema schema, Map<String,Integer> offsets, int slotsize) {
+      this.schema    = schema;
+      this.offsets   = offsets;
+      this.slotsize = slotsize;
+   }
 
-  public Layout(Schema schema) {
-    this.schema = schema;
-    offsets = new HashMap<>();
-    int pos = Integer.BYTES; // leave space for int 4B empty/inuse flag
-    for (String fieldname: schema.fields()) {
-      offsets.put(fieldname, pos);
-      pos += lengthInBytes(fieldname);
-    }
-  }
+   /**
+    * Return the schema of the table's records
+    * @return the table's record schema
+    */
+   public Schema schema() {
+      return schema;
+   }
 
-  public int offset(String fieldname) {
-    return offsets.get(fieldname);
-  }
+   /**
+    * Return the offset of a specified field within a record
+    * @param fldname the name of the field
+    * @return the offset of that field within a record
+    */
+   public int offset(String fldname) {
+      return offsets.get(fldname);
+   }
 
-  public int slotSize() {
-    return 1;
-  }
+   /**
+    * Return the size of a slot, in bytes.
+    * @return the size of a slot
+    */
+   public int slotSize() {
+      return slotsize;
+   }
 
-  private int lengthInBytes(String fieldname) {
-    int fieldType = schema.type(fieldname);
-    if (fieldType == java.sql.Types.INTEGER)
-      return Integer.BYTES;
-    else // varchar
-      return Page.maxLength(1); // TODO fix this and test
-  }
+   private int lengthInBytes(String fldname) {
+      int fldtype = schema.type(fldname);
+      if (fldtype == INTEGER)
+         return Integer.BYTES;
+      else // fldtype == VARCHAR
+         return Page.maxLength(schema.length(fldname));
+   }
 }
+

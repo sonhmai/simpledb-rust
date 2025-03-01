@@ -1,76 +1,136 @@
 package com.simpledb.record;
 
+import com.simpledb.file.BlockId;
 import com.simpledb.query.Constant;
 import com.simpledb.query.UpdateScan;
 import com.simpledb.tx.Transaction;
 
+import static java.sql.Types.INTEGER;
+
+/**
+ * Provides the abstraction of an arbitrarily large array
+ * of records.
+ * @author sciore
+ */
 public class TableScan implements UpdateScan {
+   private Transaction tx;
+   private Layout layout;
+   private RecordPage rp;
+   private String filename;
+   private int currentslot;
 
-  private Transaction transaction;
-  private String tableName;
-  private Layout layout;
-  private RecordPage rp;
-  private int currentslot;
+   public TableScan(Transaction tx, String tblname, Layout layout) {
+      this.tx = tx;
+      this.layout = layout;
+      filename = tblname + ".tbl";
+      if (tx.size(filename) == 0)
+         moveToNewBlock();
+      else 
+         moveToBlock(0);
+   }
 
-  public TableScan(Transaction tx, String tableName, Layout layout) {
+   // Methods that implement Scan
 
-  }
+   public void beforeFirst() {
+      moveToBlock(0);
+   }
 
-  public void delete() {
-    rp.delete(currentslot);
-  }
+   public boolean next() {
+      currentslot = rp.nextAfter(currentslot);
+      while (currentslot < 0) {
+         if (atLastBlock())
+            return false;
+         moveToBlock(rp.block().number()+1);
+         currentslot = rp.nextAfter(currentslot);
+      }
+      return true;
+   }
 
-  @Override
-  public RID getRid() {
-    return null;
-  }
+   public int getInt(String fldname) {
+      return rp.getInt(currentslot, fldname);
+   }
 
-  @Override
-  public void moveToRid(RID rid) {
+   public String getString(String fldname) {
+      return rp.getString(currentslot, fldname);
+   }
 
-  }
+   public Constant getVal(String fldname) {
+      if (layout.schema().type(fldname) == INTEGER)
+         return new Constant(getInt(fldname));
+      else
+         return new Constant(getString(fldname));
+   }
 
-  public void close() {
+   public boolean hasField(String fldname) {
+      return layout.schema().hasField(fldname);
+   }
 
-  }
+   public void close() {
+      if (rp != null)
+         tx.unpin(rp.block());
+   }
 
-  /**
-   * Positions the current record before first record.
-   * JDBC API has this method as well to position the result set at the same place.
-   */
-  public void beforeFirst() {}
+   // Methods that implement UpdateScan
 
-  /** Positions current record at the next record in the file */
-  public boolean next() {
-    return true;
-  }
+   public void setInt(String fldname, int val) {
+      rp.setInt(currentslot, fldname, val);
+   }
+   
+   public void setString(String fldname, String val) {
+      rp.setString(currentslot, fldname, val);
+   }
 
-  public void insert() {}
+   public void setVal(String fldname, Constant val) {
+      if (layout.schema().type(fldname) == INTEGER)
+         setInt(fldname, val.asInt());
+      else
+         setString(fldname, val.asString());
+   }
 
-  public int getInt(String tablename) {
-    return 1;
-  }
+   public void insert() {
+      currentslot = rp.insertAfter(currentslot);
+      while (currentslot < 0) {
+         if (atLastBlock()) 
+            moveToNewBlock();
+         else 
+            moveToBlock(rp.block().number()+1);
+         currentslot = rp.insertAfter(currentslot);
+      }
+   }
 
-  @Override
-  public void setVal(String fldname, Constant val) {
+   public void delete() {
+      rp.delete(currentslot);
+   }
 
-  }
+   public void moveToRid(RID rid) {
+      close();
+      BlockId blk = new BlockId(filename, rid.blockNumber());
+      rp = new RecordPage(tx, blk, layout);
+      currentslot = rid.slot();
+   }
 
-  public void setInt(String tablename, int value) {}
+   public RID getRid() {
+      return new RID(rp.block().number(), currentslot);
+   }
 
-  public String getString(String tablename) {
-    return "default";
-  }
+   // Private auxiliary methods
 
-  @Override
-  public Constant getVal(String fldname) {
-    return null;
-  }
+   private void moveToBlock(int blknum) {
+      close();
+      BlockId blk = new BlockId(filename, blknum);
+      rp = new RecordPage(tx, blk, layout);
+      currentslot = -1;
+   }
 
-  @Override
-  public boolean hasField(String fldname) {
-    return false;
-  }
+   private void moveToNewBlock() {
+      close();
+      BlockId blk = tx.append(filename);
+      rp = new RecordPage(tx, blk, layout);
+      rp.format();
+      currentslot = -1;
+   }
 
-  public void setString(String tablename, String value) {}
+   private boolean atLastBlock() {
+      return rp.block().number() == tx.size(filename) - 1;
+   }
 }
