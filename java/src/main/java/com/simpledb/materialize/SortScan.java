@@ -12,10 +12,6 @@ import java.util.List;
  * The Scan class for the <i>sort</i> operator.
  * @author Edward Sciore
  */
-/**
- * @author sciore
- *
- */
 public class SortScan implements Scan {
    private UpdateScan s1, s2=null, currentscan=null;
    private RecordComparator comp;
